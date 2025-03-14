@@ -1,4 +1,4 @@
-package com.mcp.jira_service;
+package com.mcp.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
