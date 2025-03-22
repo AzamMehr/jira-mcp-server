@@ -15,16 +15,21 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class IssueSearchService extends BaseJiraService {
+public class TicketQueryService extends BaseJiraService {
 
-    private static final Logger logger = LoggerFactory.getLogger(IssueSearchService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TicketQueryService.class);
 
-    public IssueSearchService(JiraApiConfiguration jiraApiConfiguration) {
+    public TicketQueryService(JiraApiConfiguration jiraApiConfiguration) {
         super(jiraApiConfiguration);
     }
 
 
-    @Tool(description = "Search Jira issues using JQL")
+    @Tool(description = """
+         Search Jira issues using JQL (Jira Query Language).
+         Parameters:
+         1. jql - The JQL search query (e.g., 'project = DEMO AND status = Open')
+         2. maxResults - Optional maximum number of results to return
+         """)
     public IssueSearchDTO.SearchResponse searchIssues(String jql, Integer maxResults) {
         String endpoint = "/search";
         Map<String, Object> params = new HashMap<>();
@@ -35,7 +40,7 @@ public class IssueSearchService extends BaseJiraService {
         }
 
         // Build the URL with query parameters
-        URI uri = UriComponentsBuilder.fromHttpUrl(this.jiraApiConfiguration.apiUrl() + endpoint)
+        URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
                 .queryParam("jql", jql)
                 .queryParam("maxResults", 10)
                 .build()
@@ -53,11 +58,15 @@ public class IssueSearchService extends BaseJiraService {
         return response.getBody() != null ? response.getBody() : new IssueSearchDTO.SearchResponse(List.of());
     }
 
-    @Tool(description = "Retrieve a specific Jira issue by its key")
+    @Tool(description = """
+         Retrieve a specific Jira issue by its key.
+         Parameter:
+         1. issueKey - The Jira issue key to retrieve (e.g., 'DEMO-123')
+         """)
     public IssueSearchDTO.GetIssueResponse getIssue(String issueKey) {
         String endpoint = "/issue/" + issueKey;
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(this.jiraApiConfiguration.apiUrl() + endpoint)
+        URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
                 .build()
                 .encode()
                 .toUri();

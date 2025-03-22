@@ -1,7 +1,7 @@
 package com.mcp.app;
 
-import com.mcp.service.IssueManagementService;
-import com.mcp.service.IssueSearchService;
+import com.mcp.service.TicketOperationsService;
+import com.mcp.service.TicketQueryService;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
@@ -18,9 +18,9 @@ public class JiraServiceApplication {
     }
 
     @Bean
-    public ToolCallbackProvider jiraTools(IssueManagementService issueManagementService, IssueSearchService issueSearchService) {
+    public ToolCallbackProvider jiraTools(TicketOperationsService ticketOperationsService, TicketQueryService ticketQueryService) {
         return MethodToolCallbackProvider.builder()
-                .toolObjects(issueManagementService, issueSearchService)
+                .toolObjects(ticketOperationsService, ticketQueryService)
                 .build();
     }
 }
