@@ -11,10 +11,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.mcp"})
-public class JiraServiceApplication {
+public class JiraMcpServerApp {
 
     public static void main(String[] args) {
-        SpringApplication.run(JiraServiceApplication.class, args);
+        SpringApplication.run(JiraMcpServerApp.class, args);
     }
 
     @Bean

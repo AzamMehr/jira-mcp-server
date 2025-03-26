@@ -1,7 +1,7 @@
 package com.mcp.service;
 
 import com.mcp.config.JiraApiConfiguration;
-import com.mcp.dto.IssueManagementDTO;
+import com.mcp.dto.TicketOperationsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
@@ -46,7 +46,7 @@ public class TicketOperationsService extends BaseJiraService{
              }
          }
          """)
-    public String createIssue(IssueManagementDTO.CreateIssueRequest issueData) {
+    public String createIssue(TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue";
         System.out.println("Issue data received : " + issueData);
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
@@ -56,12 +56,12 @@ public class TicketOperationsService extends BaseJiraService{
 
         try {
             // Send POST request
-            ResponseEntity<IssueManagementDTO.CreateIssueResponse> response = restClient.post()
+            ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = restClient.post()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(issueData)
                     .retrieve()
-                    .toEntity(IssueManagementDTO.CreateIssueResponse.class);
+                    .toEntity(TicketOperationsDTO.CreateIssueResponse.class);
             logger.info("Response received: {}", response);
             logger.info("response.getBody(): {}", response.getBody());
             // Return created issue data
@@ -78,7 +78,7 @@ public class TicketOperationsService extends BaseJiraService{
          1. issueKey - The Jira issue key (e.g., 'DEMO-123')
          2. issueData - The updated fields in the same format as create_issues
          """)
-    public ResponseEntity<Void> updateIssue(String issueKey, IssueManagementDTO.CreateIssueRequest issueData) {
+    public ResponseEntity<Void> updateIssue(String issueKey, TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue/" + issueKey;
 
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
@@ -109,7 +109,7 @@ public class TicketOperationsService extends BaseJiraService{
          1. issueKey - The Jira issue key (e.g., 'DEMO-123')
          2. comment - The text content of the comment as a simple string
          """)
-    public IssueManagementDTO.AddCommentResponse addComment(String issueKey, String comment) {
+    public TicketOperationsDTO.AddCommentResponse addComment(String issueKey, String comment) {
         String endpoint = "/issue/" + issueKey + "/comment";
         Map<String, Object> data = new HashMap<>();
         data.put("body", comment);
@@ -121,18 +121,18 @@ public class TicketOperationsService extends BaseJiraService{
 
         try {
             // Send POST request
-            ResponseEntity<IssueManagementDTO.AddCommentResponse> response = restClient.post()
+            ResponseEntity<TicketOperationsDTO.AddCommentResponse> response = restClient.post()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(data)
                     .retrieve()
-                    .toEntity(IssueManagementDTO.AddCommentResponse.class);
+                    .toEntity(TicketOperationsDTO.AddCommentResponse.class);
 
             // Return added comment data
-            return response.getBody() != null ? response.getBody() : new IssueManagementDTO.AddCommentResponse("", "");
+            return response.getBody() != null ? response.getBody() : new TicketOperationsDTO.AddCommentResponse("", "");
         } catch (Exception e) {
             logger.error("Error adding comment to JIRA issue: {}", e.getMessage());
-            return new IssueManagementDTO.AddCommentResponse("", "");
+            return new TicketOperationsDTO.AddCommentResponse("", "");
         }
     }
 

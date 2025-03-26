@@ -3,11 +3,11 @@ package com.mcp.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class IssueManagementDTO {
+public class TicketOperationsDTO {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record CreateIssueRequest(
-            @JsonProperty("fields") CommonDTO.Fields fields
+            @JsonProperty("fields") TicketCommonDTO.Fields fields
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)

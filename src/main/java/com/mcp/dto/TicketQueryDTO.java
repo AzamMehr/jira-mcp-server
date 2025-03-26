@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class IssueSearchDTO {
+public class TicketQueryDTO {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record SearchResponse(
             @JsonProperty("issues") List<JiraIssue> issues
@@ -16,7 +16,7 @@ public class IssueSearchDTO {
             @JsonProperty("id") String id,
             @JsonProperty("self") String self,
             @JsonProperty("key") String key,
-            @JsonProperty("fields") CommonDTO.Fields fields
+            @JsonProperty("fields") TicketCommonDTO.Fields fields
     ) {
         public String getSummary() {
             return fields != null ? fields.summary() : "";
@@ -27,6 +27,6 @@ public class IssueSearchDTO {
     public record GetIssueResponse(
             @JsonProperty("id") String id,
             @JsonProperty("key") String key,
-            @JsonProperty("fields") CommonDTO.IssueFields fields
+            @JsonProperty("fields") TicketCommonDTO.IssueFields fields
     ) {}
 }

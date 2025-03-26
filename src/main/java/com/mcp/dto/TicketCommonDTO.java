@@ -3,7 +3,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
-public class CommonDTO {
+public class TicketCommonDTO {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Project(
             @JsonProperty("key") String key

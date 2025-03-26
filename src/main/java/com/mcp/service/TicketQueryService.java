@@ -1,7 +1,7 @@
 package com.mcp.service;
 
 import com.mcp.config.JiraApiConfiguration;
-import com.mcp.dto.IssueSearchDTO;
+import com.mcp.dto.TicketQueryDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
@@ -30,11 +30,12 @@ public class TicketQueryService extends BaseJiraService {
          1. jql - The JQL search query (e.g., 'project = DEMO AND status = Open')
          2. maxResults - Optional maximum number of results to return
          """)
-    public IssueSearchDTO.SearchResponse searchIssues(String jql, Integer maxResults) {
+    public TicketQueryDTO.SearchResponse searchIssues(String jql, Integer maxResults) {
         String endpoint = "/search";
         Map<String, Object> params = new HashMap<>();
         params.put("jql", jql);
-
+        System.out.println("jql : " + jql);
+        System.out.println("maxResults : " + maxResults);
         if (maxResults != null) {
             params.put("maxResults", maxResults);
         }
@@ -46,16 +47,16 @@ public class TicketQueryService extends BaseJiraService {
                 .build()
                 .encode()
                 .toUri();
-
+        System.out.println("URI : " + uri);
         // Send GET request
-        ResponseEntity<IssueSearchDTO.SearchResponse> response = restClient.get()
+        ResponseEntity<TicketQueryDTO.SearchResponse> response = restClient.get()
                 .uri(uri)
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
-                .toEntity(IssueSearchDTO.SearchResponse.class);
-
+                .toEntity(TicketQueryDTO.SearchResponse.class);
+        System.out.println("Response : " + response);
         // Return issue list
-        return response.getBody() != null ? response.getBody() : new IssueSearchDTO.SearchResponse(List.of());
+        return response.getBody() != null ? response.getBody() : new TicketQueryDTO.SearchResponse(List.of());
     }
 
     @Tool(description = """
@@ -63,7 +64,7 @@ public class TicketQueryService extends BaseJiraService {
          Parameter:
          1. issueKey - The Jira issue key to retrieve (e.g., 'DEMO-123')
          """)
-    public IssueSearchDTO.GetIssueResponse getIssue(String issueKey) {
+    public TicketQueryDTO.GetIssueResponse getIssue(String issueKey) {
         String endpoint = "/issue/" + issueKey;
 
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
@@ -73,17 +74,17 @@ public class TicketQueryService extends BaseJiraService {
 
         try {
             // Send GET request
-            ResponseEntity<IssueSearchDTO.GetIssueResponse> response = restClient.get()
+            ResponseEntity<TicketQueryDTO.GetIssueResponse> response = restClient.get()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .retrieve()
-                    .toEntity(IssueSearchDTO.GetIssueResponse.class);
+                    .toEntity(TicketQueryDTO.GetIssueResponse.class);
 
             // Return issue data
-            return response.getBody() != null ? response.getBody() : new IssueSearchDTO.GetIssueResponse("", "", null);
+            return response.getBody() != null ? response.getBody() : new TicketQueryDTO.GetIssueResponse("", "", null);
         } catch (Exception e) {
             logger.error("Error retrieving JIRA issue: {}", e.getMessage());
-            return new IssueSearchDTO.GetIssueResponse("", "", null);
+            return new TicketQueryDTO.GetIssueResponse("", "", null);
         }
     }
 
