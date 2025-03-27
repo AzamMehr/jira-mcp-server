@@ -18,6 +18,10 @@ public abstract class BaseJiraService {
         this.headers = createHeaders();
     }
 
+    protected RestClient getRestClient() {
+        return restClient;
+    }
+
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(this.jiraApiConfiguration.username(), this.jiraApiConfiguration.apiToken());

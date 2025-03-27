@@ -5,8 +5,10 @@ import com.mcp.dto.TicketQueryDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -19,10 +21,10 @@ public class TicketQueryService extends BaseJiraService {
 
     private static final Logger logger = LoggerFactory.getLogger(TicketQueryService.class);
 
+    @Autowired
     public TicketQueryService(JiraApiConfiguration jiraApiConfiguration) {
         super(jiraApiConfiguration);
     }
-
 
     @Tool(description = """
          Search Jira issues using JQL (Jira Query Language).
@@ -49,7 +51,7 @@ public class TicketQueryService extends BaseJiraService {
                 .toUri();
         System.out.println("URI : " + uri);
         // Send GET request
-        ResponseEntity<TicketQueryDTO.SearchResponse> response = restClient.get()
+        ResponseEntity<TicketQueryDTO.SearchResponse> response = getRestClient().get()
                 .uri(uri)
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
@@ -74,7 +76,7 @@ public class TicketQueryService extends BaseJiraService {
 
         try {
             // Send GET request
-            ResponseEntity<TicketQueryDTO.GetIssueResponse> response = restClient.get()
+            ResponseEntity<TicketQueryDTO.GetIssueResponse> response = getRestClient().get()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .retrieve()
@@ -87,5 +89,4 @@ public class TicketQueryService extends BaseJiraService {
             return new TicketQueryDTO.GetIssueResponse("", "", null);
         }
     }
-
 }

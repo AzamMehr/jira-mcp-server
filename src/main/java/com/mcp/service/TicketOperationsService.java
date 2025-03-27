@@ -5,8 +5,10 @@ import com.mcp.dto.TicketOperationsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -14,10 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class TicketOperationsService extends BaseJiraService{
+public class TicketOperationsService extends BaseJiraService {
 
     private static final Logger logger = LoggerFactory.getLogger(TicketOperationsService.class);
 
+    @Autowired
     public TicketOperationsService(JiraApiConfiguration jiraApiConfiguration) {
         super(jiraApiConfiguration);
     }
@@ -56,7 +59,7 @@ public class TicketOperationsService extends BaseJiraService{
 
         try {
             // Send POST request
-            ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = restClient.post()
+            ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = getRestClient().post()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(issueData)
@@ -65,10 +68,10 @@ public class TicketOperationsService extends BaseJiraService{
             logger.info("Response received: {}", response);
             logger.info("response.getBody(): {}", response.getBody());
             // Return created issue data
-            return "Issue created with key: "+response.getBody();
+            return response.getBody() != null ? "Issue created with key: " + response.getBody().key() : "Failed to create issue";
         } catch (Exception e) {
             logger.error("Error creating JIRA issue: {}", e.getMessage());
-            return "It failed to create issue";
+            return "Failed to create issue";
         }
     }
 
@@ -88,15 +91,12 @@ public class TicketOperationsService extends BaseJiraService{
 
         try {
             // Send PUT request
-            ResponseEntity<Void> response = restClient.put()
+            return getRestClient().put()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(issueData)
                     .retrieve()
                     .toEntity(Void.class);
-
-            // Return updated issue data
-            return response.getStatusCode() == HttpStatus.NO_CONTENT ? ResponseEntity.noContent().build() : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
             logger.error("Error updating JIRA issue: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -121,7 +121,7 @@ public class TicketOperationsService extends BaseJiraService{
 
         try {
             // Send POST request
-            ResponseEntity<TicketOperationsDTO.AddCommentResponse> response = restClient.post()
+            ResponseEntity<TicketOperationsDTO.AddCommentResponse> response = getRestClient().post()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(data)
@@ -135,5 +135,4 @@ public class TicketOperationsService extends BaseJiraService{
             return new TicketOperationsDTO.AddCommentResponse("", "");
         }
     }
-
 }
