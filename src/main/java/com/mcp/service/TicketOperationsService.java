@@ -8,7 +8,6 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -27,7 +26,9 @@ public class TicketOperationsService extends BaseJiraService {
 
     @Tool(name = "create_issues",
          description = """
-         Create a new Jira issue. You need to provide the issue details in the following format:
+         Create a new Jira issue. If ticket is created successfully, the issue key will be returned.
+         if it failed then null response will be returned. 
+         You need to provide the issue details in the following format:
          The issueData should contain 'fields' with: project key, summary, description, and issuetype.
          Example:
          {
@@ -51,28 +52,36 @@ public class TicketOperationsService extends BaseJiraService {
          """)
     public String createIssue(TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue";
-        System.out.println("Issue data received : " + issueData);
+        logger.debug("Issue data received : {} ",issueData);
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
                 .build()
                 .encode()
                 .toUri();
 
         try {
-            // Send POST request
             ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = getRestClient().post()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(issueData)
                     .retrieve()
                     .toEntity(TicketOperationsDTO.CreateIssueResponse.class);
-            logger.info("Response received: {}", response);
-            logger.info("response.getBody(): {}", response.getBody());
+            logger.debug("Response received: {}", response);
+
             // Return created issue data
-            return response.getBody() != null ? "Issue created with key: " + response.getBody().key() : "Failed to create issue";
+
+            if (response.getBody() != null) {
+                logger.debug("Successfully created JIRA issue with key: {}", response.getBody().key());
+                return response.getBody() != null ? "Issue created with key: " + response.getBody().key() : "Failed to create issue";
+
+            } else {
+                logger.error("JIRA returned empty body.");
+                return "MCP failed to create issue on JIRA"; // MCP will not attempt to send null SSE
+            }
         } catch (Exception e) {
             logger.error("Error creating JIRA issue: {}", e.getMessage());
-            return "Failed to create issue";
+            return "MCP failed to create issue on JIRA";
         }
+
     }
 
     @Tool(name = "update_issue",
@@ -81,7 +90,7 @@ public class TicketOperationsService extends BaseJiraService {
          1. issueKey - The Jira issue key (e.g., 'DEMO-123')
          2. issueData - The updated fields in the same format as create_issues
          """)
-    public ResponseEntity<Void> updateIssue(String issueKey, TicketOperationsDTO.CreateIssueRequest issueData) {
+    public String updateIssue(String issueKey, TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue/" + issueKey;
 
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
@@ -91,15 +100,24 @@ public class TicketOperationsService extends BaseJiraService {
 
         try {
             // Send PUT request
-            return getRestClient().put()
+            ResponseEntity<Void> response = getRestClient().put()
                     .uri(uri)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .body(issueData)
                     .retrieve()
                     .toEntity(Void.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                logger.debug("Successfully updated JIRA issue with key: {}", issueKey);
+                return "Issue updated successfully with key: " + issueKey;
+
+            } else {
+                logger.error("Failed to update JIRA issue with key: {}", issueKey);
+                return "MCP failed to create issue on JIRA";
+            }
+
         } catch (Exception e) {
-            logger.error("Error updating JIRA issue: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            logger.error("Failed to update JIRA issue with key because of technical issues: {}", issueKey);
+            return "MCP failed to create issue on JIRA";
         }
     }
 
@@ -109,7 +127,7 @@ public class TicketOperationsService extends BaseJiraService {
          1. issueKey - The Jira issue key (e.g., 'DEMO-123')
          2. comment - The text content of the comment as a simple string
          """)
-    public TicketOperationsDTO.AddCommentResponse addComment(String issueKey, String comment) {
+    public String addComment(String issueKey, String comment) {
         String endpoint = "/issue/" + issueKey + "/comment";
         Map<String, Object> data = new HashMap<>();
         data.put("body", comment);
@@ -128,11 +146,17 @@ public class TicketOperationsService extends BaseJiraService {
                     .retrieve()
                     .toEntity(TicketOperationsDTO.AddCommentResponse.class);
 
-            // Return added comment data
-            return response.getBody() != null ? response.getBody() : new TicketOperationsDTO.AddCommentResponse("", "");
+            if (response.getStatusCode().is2xxSuccessful()) {
+                logger.debug("Successfully added comment to JIRA ticket with key: {}", issueKey);
+                return "Successfully added comment to JIRA ticket with key: " + issueKey;
+
+            } else {
+                logger.error("Failed to add comment to JIRA ticket with key: {}", issueKey);
+                return "MCP failed to add comment to JIRA ticket with key: " + issueKey;
+            }
         } catch (Exception e) {
             logger.error("Error adding comment to JIRA issue: {}", e.getMessage());
-            return new TicketOperationsDTO.AddCommentResponse("", "");
+            return "MCP failed to add comment to JIRA ticket with key: " + issueKey;
         }
     }
 }

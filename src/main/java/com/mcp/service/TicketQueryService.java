@@ -49,14 +49,13 @@ public class TicketQueryService extends BaseJiraService {
                 .build()
                 .encode()
                 .toUri();
-        System.out.println("URI : " + uri);
         // Send GET request
         ResponseEntity<TicketQueryDTO.SearchResponse> response = getRestClient().get()
                 .uri(uri)
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
                 .toEntity(TicketQueryDTO.SearchResponse.class);
-        System.out.println("Response : " + response);
+        logger.debug("Response : {} ",response);
         // Return issue list
         return response.getBody() != null ? response.getBody() : new TicketQueryDTO.SearchResponse(List.of());
     }
@@ -81,7 +80,7 @@ public class TicketQueryService extends BaseJiraService {
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .retrieve()
                     .toEntity(TicketQueryDTO.GetIssueResponse.class);
-
+            logger.debug("Response : {} ",response);
             // Return issue data
             return response.getBody() != null ? response.getBody() : new TicketQueryDTO.GetIssueResponse("", "", null);
         } catch (Exception e) {
