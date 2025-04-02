@@ -65,12 +65,12 @@ public class TicketOperationsService extends BaseJiraService {
                     .body(issueData)
                     .retrieve()
                     .toEntity(TicketOperationsDTO.CreateIssueResponse.class);
-            logger.debug("Response received: {}", response);
+            logger.info("Response received: {}", response);
 
             // Return created issue data
 
             if (response.getBody() != null) {
-                logger.debug("Successfully created JIRA issue with key: {}", response.getBody().key());
+                logger.info("Successfully created JIRA issue with key: {}", response.getBody().key());
                 return response.getBody() != null ? "Issue created with key: " + response.getBody().key() : "Failed to create issue";
 
             } else {
@@ -107,7 +107,7 @@ public class TicketOperationsService extends BaseJiraService {
                     .retrieve()
                     .toEntity(Void.class);
             if (response.getStatusCode().is2xxSuccessful()) {
-                logger.debug("Successfully updated JIRA issue with key: {}", issueKey);
+                logger.info("Successfully updated JIRA issue with key: {}", issueKey);
                 return "Issue updated successfully with key: " + issueKey;
 
             } else {
@@ -147,7 +147,7 @@ public class TicketOperationsService extends BaseJiraService {
                     .toEntity(TicketOperationsDTO.AddCommentResponse.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                logger.debug("Successfully added comment to JIRA ticket with key: {}", issueKey);
+                logger.info("Successfully added comment to JIRA ticket with key: {}", issueKey);
                 return "Successfully added comment to JIRA ticket with key: " + issueKey;
 
             } else {

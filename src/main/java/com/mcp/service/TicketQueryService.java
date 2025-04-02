@@ -55,7 +55,7 @@ public class TicketQueryService extends BaseJiraService {
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
                 .toEntity(TicketQueryDTO.SearchResponse.class);
-        logger.debug("Response : {} ",response);
+        logger.info("Response : {} ",response);
         // Return issue list
         return response.getBody() != null ? response.getBody() : new TicketQueryDTO.SearchResponse(List.of());
     }
@@ -80,7 +80,7 @@ public class TicketQueryService extends BaseJiraService {
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .retrieve()
                     .toEntity(TicketQueryDTO.GetIssueResponse.class);
-            logger.debug("Response : {} ",response);
+            logger.info("Response about ticket: {} ",response);
             // Return issue data
             return response.getBody() != null ? response.getBody() : new TicketQueryDTO.GetIssueResponse("", "", null);
         } catch (Exception e) {
