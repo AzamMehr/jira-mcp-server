@@ -25,27 +25,11 @@ ext {
 
 dependencies {
 	implementation 'org.springframework.ai:spring-ai-mcp-server-webflux-spring-boot-starter'
-	implementation group: 'io.modelcontextprotocol.sdk', name: 'mcp', version: '0.8.1'
-	implementation 'org.springframework.ai:spring-ai:1.0.0-SNAPSHOT'
-	implementation 'org.springframework.ai:spring-ai-core:1.0.0-SNAPSHOT'
-	implementation 'org.springframework.ai:spring-ai-mcp:1.0.0-SNAPSHOT'
-	implementation 'org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT'
-	implementation 'org.springframework.ai:spring-ai-docs:1.0.0-SNAPSHOT'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-configurations.all {
-	resolutionStrategy {
-		force 'io.modelcontextprotocol:sdk:0.8.1'
-		force 'org.springframework.ai:spring-ai:1.0.0-SNAPSHOT'
-		force 'org.springframework.ai:spring-ai-core:1.0.0-SNAPSHOT'
-		force 'org.springframework.ai:spring-ai-mcp:1.0.0-SNAPSHOT'
-		force 'org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT'
-		force 'org.springframework.ai:spring-ai-docs:1.0.0-SNAPSHOT'
-	}
-}
 
 dependencyManagement {
 	imports {
