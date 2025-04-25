@@ -5,7 +5,7 @@ import com.mcp.dto.TicketQueryDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -17,14 +17,18 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class TicketQueryService extends BaseJiraService {
+public class TicketQueryService {
 
     private static final Logger logger = LoggerFactory.getLogger(TicketQueryService.class);
 
-    @Autowired
-    public TicketQueryService(JiraApiConfiguration jiraApiConfiguration) {
-        super(jiraApiConfiguration);
+    private final RestClient restClient;
+    private final JiraApiConfiguration jiraApiConfiguration;
+
+    public TicketQueryService(RestClient restClient, JiraApiConfiguration jiraApiConfiguration) {
+        this.restClient = restClient;
+        this.jiraApiConfiguration = jiraApiConfiguration;
     }
+
 
     @Tool(description = """
          Search Jira issues using JQL (Jira Query Language).
@@ -42,21 +46,17 @@ public class TicketQueryService extends BaseJiraService {
             params.put("maxResults", maxResults);
         }
 
-        // Build the URL with query parameters
         URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
                 .queryParam("jql", jql)
                 .queryParam("maxResults", 10)
                 .build()
                 .encode()
                 .toUri();
-        // Send GET request
-        ResponseEntity<TicketQueryDTO.SearchResponse> response = getRestClient().get()
+        ResponseEntity<TicketQueryDTO.SearchResponse> response = restClient.get()
                 .uri(uri)
-                .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
                 .toEntity(TicketQueryDTO.SearchResponse.class);
         logger.info("Response : {} ",response);
-        // Return issue list
         return response.getBody() != null ? response.getBody() : new TicketQueryDTO.SearchResponse(List.of());
     }
 
@@ -74,14 +74,13 @@ public class TicketQueryService extends BaseJiraService {
                 .toUri();
 
         try {
-            // Send GET request
-            ResponseEntity<TicketQueryDTO.GetIssueResponse> response = getRestClient().get()
+
+            ResponseEntity<TicketQueryDTO.GetIssueResponse> response = restClient.get()
                     .uri(uri)
-                    .headers(httpHeaders -> httpHeaders.addAll(headers))
                     .retrieve()
                     .toEntity(TicketQueryDTO.GetIssueResponse.class);
             logger.info("Response about ticket: {} ",response);
-            // Return issue data
+
             return response.getBody() != null ? response.getBody() : new TicketQueryDTO.GetIssueResponse("", "", null);
         } catch (Exception e) {
             logger.error("Error retrieving JIRA issue: {}", e.getMessage());

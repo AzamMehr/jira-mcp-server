@@ -1,28 +1,29 @@
 package com.mcp.service;
 
-import com.mcp.config.JiraApiConfiguration;
 import com.mcp.dto.TicketOperationsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class TicketOperationsService extends BaseJiraService {
+public class TicketOperationsService {
 
     private static final Logger logger = LoggerFactory.getLogger(TicketOperationsService.class);
 
-    @Autowired
-    public TicketOperationsService(JiraApiConfiguration jiraApiConfiguration) {
-        super(jiraApiConfiguration);
+    private final RestClient restClient;
+
+    public TicketOperationsService(RestClient restClient) {
+        this.restClient = restClient;
     }
+
+
 
     @Tool(name = "create_issues",
          description = """
@@ -52,22 +53,15 @@ public class TicketOperationsService extends BaseJiraService {
          """)
     public String createIssue(TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue";
-        logger.debug("Issue data received : {} ",issueData);
-        URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
-                .build()
-                .encode()
-                .toUri();
+        logger.info("Issue data received : {} ",issueData);
 
         try {
-            ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = getRestClient().post()
-                    .uri(uri)
-                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+            ResponseEntity<TicketOperationsDTO.CreateIssueResponse> response = restClient.post()
+                    .uri(endpoint)
                     .body(issueData)
                     .retrieve()
                     .toEntity(TicketOperationsDTO.CreateIssueResponse.class);
             logger.info("Response received: {}", response);
-
-            // Return created issue data
 
             if (response.getBody() != null) {
                 logger.info("Successfully created JIRA issue with key: {}", response.getBody().key());
@@ -93,16 +87,10 @@ public class TicketOperationsService extends BaseJiraService {
     public String updateIssue(String issueKey, TicketOperationsDTO.CreateIssueRequest issueData) {
         String endpoint = "/issue/" + issueKey;
 
-        URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
-                .build()
-                .encode()
-                .toUri();
-
         try {
             // Send PUT request
-            ResponseEntity<Void> response = getRestClient().put()
-                    .uri(uri)
-                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+            ResponseEntity<Void> response = restClient.put()
+                    .uri(endpoint)
                     .body(issueData)
                     .retrieve()
                     .toEntity(Void.class);
@@ -132,16 +120,10 @@ public class TicketOperationsService extends BaseJiraService {
         Map<String, Object> data = new HashMap<>();
         data.put("body", comment);
 
-        URI uri = UriComponentsBuilder.fromUriString(this.jiraApiConfiguration.apiUrl() + endpoint)
-                .build()
-                .encode()
-                .toUri();
-
         try {
-            // Send POST request
-            ResponseEntity<TicketOperationsDTO.AddCommentResponse> response = getRestClient().post()
-                    .uri(uri)
-                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+
+            ResponseEntity<TicketOperationsDTO.AddCommentResponse> response = restClient.post()
+                    .uri(endpoint)
                     .body(data)
                     .retrieve()
                     .toEntity(TicketOperationsDTO.AddCommentResponse.class);
